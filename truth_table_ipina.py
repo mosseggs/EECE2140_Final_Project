@@ -90,11 +90,11 @@ class TruthTable:
         for i in ans1:
             for j in ans2:
                 match(operator.lower()):
-                    case "and":
+                    case "and" | "&&" | "&":
                         new_ans.append(i and j)
-                    case "or":
+                    case "or" | "||" | "|":
                         new_ans.append(i or j)
-                    case "xor":
+                    case "xor" | "^" | "⊻":
                         new_ans.append(i != j)
                     case "nand":
                         new_ans.append(not (i and j))
@@ -104,33 +104,31 @@ class TruthTable:
                         new_ans.append(i == j)
         return new_ans
 
-    def manual(self, phrase : str) -> None:
-        """Parses the string for the phrases."""
-        # TODO: Needs work
-        for char in phrase.split(" "):
-            if char.lower() not in ["and", "or", "xor", "not", "nand", "nor", "xnor"]:
-                self.variables.append(char)
-
     def get_variable_count(self) -> None:
         """Gets the amount of variables for manual insertion into the truth table"""
-        while True:
-            count = int(input("Enter number of variables (1 - 4): "))
-            while count > 0:
-                print(count)
-                count2 : int = count
-                if count >= 26:
-                    count2 = 26
-                self.add_variables(count2, int(count/26))
-                count -= 26
-            break
+        count = -1
+        while count <= 0:
+            count = int(input("Enter number of variables: "))
+        for i in range(int(count/26) + 1):
+            if(count - 26 > 0):
+                self.add_variables(26, i)
+            else:
+                self.add_variables(count, i)
+            count -= 26
         print(f"{self.variables}")
 
     def add_variables(self, count: int, start: int) -> None:
         """Helper method to add variables over 26"""
         for letter in range(count):
-            if start > 0:
-                self._variables.append(chr(start+65))
-            self._variables.append(chr(letter + 65))
+            start2 : int = start
+            string : str = ""
+            while start2 > 0:
+                start3 : int = start2 % 26
+                if (start2 == 26):
+                    start3 = 26
+                string += chr(start2 % 26 + 64)
+                start2 -= 26
+            self._variables.append(string + chr(letter + 65))
 
     def generate_table(self)-> None:
         """Generates a table"""
@@ -178,9 +176,9 @@ class TruthTable:
             print(f"{values}| {row['Y']}")
         print("-" * (len(self._variables) * 4 + 6))
 table = TruthTable()
-table.parse("(A AND B) AND NOT(C AND D)")
+table.parse("(A AND B) AND NOT(D)")
 # table.get_answers([False, True], "AND", [False, False, False, True])
 # table.reverse([False, True])
-# table.manual("A B C D")
+# table.get_variable_count()
 table.generate_table()
 table.display_table()
