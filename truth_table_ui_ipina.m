@@ -33,7 +33,7 @@ function truth_table_ui_ipina()
     %  Boolean Expression Mode
     function onExpr(~,~)
         a = inputdlg({'Enter boolean expression:'}, ...
-            'Expression', [1 80], {'(A AND B) AND NOT D'});
+            'Expression', [1 80], {''});
         if isempty(a), return; end
 
         expr = string(a{1});

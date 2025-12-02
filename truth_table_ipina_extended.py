@@ -5,7 +5,8 @@ Created on Sat Oct 25 14:05:36 2025
 @author: juani and gabrielL
 """
 
-from typing import List
+import math
+from typing import Any, List
 
 # import SymPy
 try:
@@ -24,7 +25,7 @@ def bits_of(i: int, width: int) -> List[int]:
 
 
 # Convert SymPy expression into readable word-based form
-def sympy_obj_to_words(expr, variables: List[str]) -> str:
+def sympy_obj_to_words(expr: Any, variables: List[str]) -> str:
     if expr is True:
         return "1"
     if expr is False:
@@ -50,11 +51,11 @@ def detect_xor_xnor(expr_str: str, variables: List[str]) -> str:
     if len(variables) == 2:
         A, B = variables
 
-        # XOR pattern 
+        # XOR pattern
         xor1 = f"({A}ANDNOT{B})OR({B}ANDNOT{A})"
         xor2 = f"({B}ANDNOT{A})OR({A}ANDNOT{B})"
 
-        # XNOR pattern 
+        # XNOR pattern
         xnor1 = f"({A}AND{B})OR(NOT{A}ANDNOT{B})"
         xnor2 = f"(NOT{A}ANDNOT{B})OR({A}AND{B})"
 
@@ -70,7 +71,7 @@ def detect_xor_xnor(expr_str: str, variables: List[str]) -> str:
 class TruthTableExtended:
 
     def __init__(self, variables: List[str], outputs: List[int]):
-       
+
         self.variables = variables
         self.outputs = outputs
 
@@ -95,8 +96,8 @@ class TruthTableExtended:
     @staticmethod
     def detect_variables(expr: str) -> List[str]:
         found = []
-        for c in expr:
-            if c in "ABCDE":  # Supports up to 5 variables
+        for c in expr.replace("(","").replace(")","").split():
+            if c not in ["and", "or", "not", "^", "=="]:  # Supports up to 5 variables, can be removed later if need be
                 if c not in found:
                     found.append(c)
         found.sort()
@@ -104,8 +105,20 @@ class TruthTableExtended:
 
 
     @staticmethod
-    def from_expression(expr_raw: str):
-        variables = TruthTableExtended.detect_variables(expr_raw)
+    def from_expression(expr_raw: str) -> 'TruthTableExtended':
+
+         # Normalize expression for Python eval
+        norm = expr_raw
+        norm = norm.replace(" AND ", " and ")
+        norm = norm.replace(" OR ", " or ")
+        norm = norm.replace(" NOT ", " not ")
+        norm = norm.replace("XOR", "^")
+        norm = norm.replace("XNOR", "==")
+        norm = norm.replace("&", " and ")
+        norm = norm.replace("|", " or ")
+        norm = norm.replace("~", " not ")
+
+        variables = TruthTableExtended.detect_variables(norm)
         n = len(variables)
         rows = 2 ** n
 
@@ -118,35 +131,23 @@ class TruthTableExtended:
             # Assign variable True/False
             env = {variables[idx]: (bits_i[idx] == 1) for idx in range(n)}
 
-            # Normalize expression for Python eval
-            norm = expr_raw
-            norm = norm.replace(" AND ", " and ")
-            norm = norm.replace(" OR ", " or ")
-            norm = norm.replace(" NOT ", " not ")
-            norm = norm.replace("XOR", "^")     
-            norm = norm.replace("XNOR", "==")   
-            norm = norm.replace("&", " and ")
-            norm = norm.replace("|", " or ")
-            norm = norm.replace("~", " not ")
-
             # Evaluate expression
             try:
                 val = eval(norm, {}, env)
             except Exception:
                 val = False
-
             outputs.append(1 if val else 0)
 
         return TruthTableExtended(variables, outputs)
 
 
     @staticmethod
-    def from_manual(n: int, outs: List[int]):
+    def from_manual(n: int, outs: List[int]) -> 'TruthTableExtended':
         variables = [chr(ord('A') + i) for i in range(n)]
         return TruthTableExtended(variables, outs)
 
-\
-    
+
+
     def min_expression(self) -> str:
         true_terms = [i for i, v in enumerate(self.outputs) if v == 1]
 
@@ -172,7 +173,7 @@ class TruthTableExtended:
 
 
 
-    def _fallback(self, terms):
+    def _fallback(self, terms : List[int]) -> str:
         n = len(self.variables)
         parts = []
 
@@ -189,135 +190,166 @@ class TruthTableExtended:
         return " OR ".join(parts)
 
 
+# Old K-map code
+    # def k_map(self) -> str:
+    #     n = len(self.variables)
+    #     if n == 1: return self._k1()
+    #     if n == 2: return self._k2()
+    #     if n == 3: return self._k3()
+    #     if n == 4: return self._k4()
+    #     if n == 5: return self._k5()
+    #     return "K-map not supported for this number of variables.\n"
 
-    def k_map(self) -> str:
-        n = len(self.variables)
-        if n == 1: return self._k1()
-        if n == 2: return self._k2()
-        if n == 3: return self._k3()
-        if n == 4: return self._k4()
-        if n == 5: return self._k5()
-        return "K-map not supported for this number of variables.\n"
+
+    # # 1-variable K-map
+    # def _k1(self) -> str:
+    #     A = self.outputs
+    #     return (
+    #         "Karnaugh Map:\n"
+    #         "A\n"
+    #         "+---+\n"
+    #         f"| {A[0]} |\n"
+    #         "+---+\n"
+    #         f"| {A[1]} |\n"
+    #         "+---+\n"
+    #     )
 
 
-    # 1-variable K-map
-    def _k1(self):
+    # # 2-variable K-map (A,B)
+    # def _k2(self) -> str:
+    #     A = self.outputs
+
+    #     grid = [
+    #         [A[0], A[1]],
+    #         [A[2], A[3]]
+    #     ]
+
+    #     s = "Karnaugh Map:\n\n"
+    #     s += "      B\n"
+    #     s += "      0   1\n"
+    #     s += "    +---+---+\n"
+    #     s += f"A 0 | {grid[0][0]} | {grid[0][1]} |\n"
+    #     s += "    +---+---+\n"
+    #     s += f"  1 | {grid[1][0]} | {grid[1][1]} |\n"
+    #     s += "    +---+---+\n"
+    #     return s
+
+
+    # # 3-variable K-map (A,B,C)
+    # def _k3(self) -> str:
+    #     A = self.outputs
+
+    #     # Gray-code reorder 00,01,11,10
+    #     grid = [
+    #         [A[0], A[1], A[3], A[2]],
+    #         [A[4], A[5], A[7], A[6]]
+    #     ]
+
+    #     s = "Karnaugh Map:\n\n"
+    #     s += "            BC\n"
+    #     s += "        00  01  11  10\n"
+    #     s += "      +---+---+---+---+\n"
+    #     s += f"A 0   | {grid[0][0]} | {grid[0][1]} | {grid[0][2]} | {grid[0][3]} |\n"
+    #     s += "      +---+---+---+---+\n"
+    #     s += f"  1   | {grid[1][0]} | {grid[1][1]} | {grid[1][2]} | {grid[1][3]} |\n"
+    #     s += "      +---+---+---+---+\n"
+    #     return s
+
+
+    # # 4-variable K-map (A,B,C,D)
+    # def _k4(self) -> str:
+    #     A = self.outputs
+
+    #     # Gray-code row/column
+    #     ro = [0, 1, 3, 2]
+    #     co = [0, 1, 3, 2]
+
+    #     grid = []
+    #     for r in ro:
+    #         row = []
+    #         for c in co:
+    #             idx = (r << 2) | c
+    #             row.append(A[idx])
+    #         grid.append(row)
+
+    #     s = "Karnaugh Map:\n\n"
+    #     s += "                 CD\n"
+    #     s += "           00  01  11  10\n"
+    #     s += "      +---+---+---+---+\n"
+    #     s += f"AB 00 | {grid[0][0]} | {grid[0][1]} | {grid[0][2]} | {grid[0][3]} |\n"
+    #     s += "      +---+---+---+---+\n"
+    #     s += f"   01 | {grid[1][0]} | {grid[1][1]} | {grid[1][2]} | {grid[1][3]} |\n"
+    #     s += "      +---+---+---+---+\n"
+    #     s += f"   11 | {grid[2][0]} | {grid[2][1]} | {grid[2][2]} | {grid[2][3]} |\n"
+    #     s += "      +---+---+---+---+\n"
+    #     s += f"   10 | {grid[3][0]} | {grid[3][1]} | {grid[3][2]} | {grid[3][3]} |\n"
+    #     s += "      +---+---+---+---+\n"
+
+    #     return s
+
+
+    # # 5-variable K-map (A,B,C,D,E)
+    # def _k5(self) -> str:
+    #     A = self.outputs
+
+    #     ro = [0, 1, 3, 2]
+    #     co = [0, 1, 3, 2, 6, 7, 5, 4]
+
+    #     grid = []
+    #     for r in ro:
+    #         row = []
+    #         for c in co:
+    #             idx = (r << 3) | c
+    #             row.append(A[idx])
+    #         grid.append(row)
+
+    #     s = "Karnaugh Map:\n\n"
+    #     s += "                            DE\n"
+    #     s += "           00 01 11 10  110 111 101 100\n"
+    #     s += ("      +" + "---+" * 8 + "\n")
+
+    #     labels = ["000", "001", "011", "010"]    # Gray-code ABC rows
+
+    #     for ir, r in enumerate(grid):
+    #         s += f"ABC {labels[ir]} | " + " | ".join(str(x) for x in r) + " |\n"
+    #         s += ("      +" + "---+" * 8 + "\n")
+
+    #     return s
+
+    def kmap(self) -> str:
         A = self.outputs
-        return (
-            "Karnaugh Map:\n"
-            "A\n"
-            "+---+\n"
-            f"| {A[0]} |\n"
-            "+---+\n"
-            f"| {A[1]} |\n"
-            "+---+\n"
-        )
-
-
-    # 2-variable K-map (A,B)
-    def _k2(self):
-        A = self.outputs
-
-        grid = [
-            [A[0], A[1]],
-            [A[2], A[3]]
-        ]
-
-        s = "Karnaugh Map:\n\n"
-        s += "      B\n"
-        s += "      0   1\n"
-        s += "    +---+---+\n"
-        s += f"A 0 | {grid[0][0]} | {grid[0][1]} |\n"
-        s += "    +---+---+\n"
-        s += f"  1 | {grid[1][0]} | {grid[1][1]} |\n"
-        s += "    +---+---+\n"
-        return s
-
-
-    # 3-variable K-map (A,B,C)
-    def _k3(self):
-        A = self.outputs
-
-        # Gray-code reorder 00,01,11,10
-        grid = [
-            [A[0], A[1], A[3], A[2]],
-            [A[4], A[5], A[7], A[6]]
-        ]
-
-        s = "Karnaugh Map:\n\n"
-        s += "            BC\n"
-        s += "        00  01  11  10\n"
-        s += "      +---+---+---+---+\n"
-        s += f"A 0   | {grid[0][0]} | {grid[0][1]} | {grid[0][2]} | {grid[0][3]} |\n"
-        s += "      +---+---+---+---+\n"
-        s += f"  1   | {grid[1][0]} | {grid[1][1]} | {grid[1][2]} | {grid[1][3]} |\n"
-        s += "      +---+---+---+---+\n"
-        return s
-
-
-    # 4-variable K-map (A,B,C,D)
-    def _k4(self):
-        A = self.outputs
-
-        # Gray-code row/column
-        ro = [0, 1, 3, 2]
-        co = [0, 1, 3, 2]
-
-        grid = []
-        for r in ro:
+        n : int = len(self.variables)
+        topLevel : list[str] = self.variables[math.floor(n/2):]
+        sideLevel : list[str] = self.variables[:math.floor(n/2)]
+        rows = [(i ^ (i >> 1)) for i in range(1 << math.floor(n/2))]
+        cols = [(i ^ (i >> 1)) for i in range(1 << n - math.floor(n/2))]
+        grid : list[list[int]] = []
+        for r in range(len(rows)):
             row = []
-            for c in co:
-                idx = (r << 2) | c
+            for c in cols:
+                idx = (r << math.ceil(n / 2)) | c
                 row.append(A[idx])
             grid.append(row)
-
         s = "Karnaugh Map:\n\n"
-        s += "                 CD\n"
-        s += "           00  01  11  10\n"
-        s += "      +---+---+---+---+\n"
-        s += f"AB 00 | {grid[0][0]} | {grid[0][1]} | {grid[0][2]} | {grid[0][3]} |\n"
-        s += "      +---+---+---+---+\n"
-        s += f"   01 | {grid[1][0]} | {grid[1][1]} | {grid[1][2]} | {grid[1][3]} |\n"
-        s += "      +---+---+---+---+\n"
-        s += f"   11 | {grid[2][0]} | {grid[2][1]} | {grid[2][2]} | {grid[2][3]} |\n"
-        s += "      +---+---+---+---+\n"
-        s += f"   10 | {grid[3][0]} | {grid[3][1]} | {grid[3][2]} | {grid[3][3]} |\n"
-        s += "      +---+---+---+---+\n"
-
+        s += "".join(" " for i in range(len(sideLevel)))
+        s += "".join(topLevel) + "\n"
+        s += "".join(sideLevel) + " " + "".join(" " for i in range(len(topLevel))) + " " \
+            + " ".join([bin(i)[2::].zfill(len(topLevel)) for i in cols]) + "\n"
+        s += "".join(" " for i in range(len(sideLevel) + len(topLevel) + 1)) + "+" \
+            + "".join(["".join(["-" for j in range(len(topLevel))]) \
+            + "+" for i in range(len(cols))]) + "\n"
+        for r in rows:
+            s += "".join(" " for i in range(len(sideLevel))) \
+                + "".join(bin(r)[2::].zfill(len(topLevel))) + " |" \
+                + "".join(["".join([" " for j in range(math.floor(len(topLevel) / 2))]) \
+                + "".join(str(grid[r][c])) \
+                + "".join([" " for j in range(math.floor(len(topLevel) / 2))]) \
+                + "|" for c in range(len(cols))]) + "\n" \
+                + "".join(" " for i in range(len(sideLevel) + len(topLevel) + 1)) + "+" \
+                + "".join(["".join(["-" for j in range(len(topLevel))]) + "+" for i in cols]) + "\n"
         return s
 
-
-    # 5-variable K-map (A,B,C,D,E)
-    def _k5(self):
-        A = self.outputs
-
-        ro = [0, 1, 3, 2]                      
-        co = [0, 1, 3, 2, 6, 7, 5, 4]            
-
-        grid = []
-        for r in ro:
-            row = []
-            for c in co:
-                idx = (r << 3) | c
-                row.append(A[idx])
-            grid.append(row)
-
-        s = "Karnaugh Map:\n\n"
-        s += "                            DE\n"
-        s += "           00 01 11 10  110 111 101 100\n"
-        s += ("      +" + "---+" * 8 + "\n")
-
-        labels = ["000", "001", "011", "010"]    # Gray-code ABC rows
-
-        for ir, r in enumerate(grid):
-            s += f"ABC {labels[ir]} | " + " | ".join(str(x) for x in r) + " |\n"
-            s += ("      +" + "---+" * 8 + "\n")
-
-        return s
-
-
-
-def cli_main(argv):
+def cli_main(argv:List[str]) -> None:
 
 
 
@@ -351,7 +383,7 @@ def cli_main(argv):
     print("Boolean expression:")
     print(t.min_expression())
     print()
-    print(t.k_map())
+    print(t.kmap())
 
 
 
