@@ -331,22 +331,23 @@ class TruthTableExtended:
                 row.append(A[idx])
             grid.append(row)
         s = "Karnaugh Map:\n\n"
-        s += "".join(" " for i in range(len(sideLevel)))
-        s += "".join(topLevel) + "\n"
-        s += "".join(sideLevel) + " " + "".join(" " for i in range(len(topLevel))) + " " \
-            + " ".join([bin(i)[2::].zfill(len(topLevel)) for i in cols]) + "\n"
-        s += "".join(" " for i in range(len(sideLevel) + len(topLevel) + 1)) + "+" \
-            + "".join(["".join(["-" for j in range(len(topLevel))]) \
+        s += "".join(" " for i in range(sum(len(s) for s in sideLevel) + len(sideLevel) - 1))
+        s += ",".join(topLevel) + "\n"
+        s += ",".join(sideLevel) + " " + "".join(" " for i in range(sum(len(s) for s in topLevel) + len(topLevel) - 1)) + " " \
+            + " ".join([bin(i)[2::].zfill(len(topLevel)) \
+            + "".join(" " for j in range(2 * math.floor(len(topLevel) / 2) + 1 - len(topLevel))) for i in cols]) + "\n"
+        s += "".join(" " for i in range(sum(len(s) for s in sideLevel) + sum(len(s) for s in topLevel) + len(sideLevel) + len(topLevel) - 1)) + "+" \
+            + "".join(["".join(["-" for j in range(2 * math.floor(len(topLevel) / 2) + 1)]) \
             + "+" for i in range(len(cols))]) + "\n"
         for r in rows:
-            s += "".join(" " for i in range(len(sideLevel))) \
-                + "".join(bin(r)[2::].zfill(len(topLevel))) + " |" \
+            s += "".join(" " for i in range(sum(len(s) for s in sideLevel) + sum(len(s) for s in topLevel) + len(topLevel) - 2)) \
+                + "".join(bin(r)[2::].zfill(len(sideLevel))) + " |" \
                 + "".join(["".join([" " for j in range(math.floor(len(topLevel) / 2))]) \
                 + "".join(str(grid[r][c])) \
                 + "".join([" " for j in range(math.floor(len(topLevel) / 2))]) \
                 + "|" for c in range(len(cols))]) + "\n" \
-                + "".join(" " for i in range(len(sideLevel) + len(topLevel) + 1)) + "+" \
-                + "".join(["".join(["-" for j in range(len(topLevel))]) + "+" for i in cols]) + "\n"
+                + "".join(" " for i in range(sum(len(s) for s in sideLevel) + sum(len(s) for s in topLevel) + len(sideLevel) + len(topLevel) - 1)) + "+" \
+                + "".join(["".join(["-" for j in range(2 * math.floor(len(topLevel) / 2) + 1)]) + "+" for i in cols]) + "\n"
         return s
 
 def cli_main(argv:List[str]) -> None:
