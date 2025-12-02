@@ -14,3 +14,34 @@ How to run code:
 1. Ensure you have python and sympy on your computer
 2. Open the "truth_table_ui_ipina.m" file in matlab
 3. run
+
+Results:
+Expression entered: (A and B) or (A and C)
+
+Truth Table:
+-------
+A B C | Y
+-------
+0 0 0 | 0
+0 0 1 | 0
+0 1 0 | 0
+0 1 1 | 0
+1 0 0 | 0
+1 0 1 | 1
+1 1 0 | 1
+1 1 1 | 1
+-------
+
+
+Boolean expression:
+(A AND B) OR (A AND C)
+
+Karnaugh Map:
+
+ B,C
+A     00  01  11  10 
+     +---+---+---+---+
+   0 | 0 | 0 | 0 | 0 |
+     +---+---+---+---+
+   1 | 0 | 1 | 1 | 1 |
+     +---+---+---+---+
