@@ -11,6 +11,40 @@ Variable names are allowed to occur multiple times, and can be longer than 1 let
 Our approach to the conversion from string to boolean expression was to utilize the bits_of and eval functions in python to evaluate each row and obtain an output, then line that up to the various tables we made.<br>
 
 How to run code:
+-
 1. Ensure you have python and sympy on your computer
 2. Open the "truth_table_ui_ipina.m" file in matlab
 3. run
+
+Results:
+-
+Expression entered: (A and B) or (A and C)
+
+Truth Table:<br>
+-------<br>
+A B C | Y<br>
+-------<br>
+0 0 0 | 0<br>
+0 0 1 | 0<br>
+0 1 0 | 0<br>
+0 1 1 | 0<br>
+1 0 0 | 0<br>
+1 0 1 | 1<br>
+1 1 0 | 1<br>
+1 1 1 | 1<br>
+-------<br>
+
+
+Boolean expression:<br>
+(A AND B) OR (A AND C)<br>
+
+Karnaugh Map:<br>
+<br>
+ B,C<br>
+A     00  01  11  10 <br>
+     +---+---+---+---+<br>
+   0 | 0 | 0 | 0 | 0 |<br>
+     +---+---+---+---+<br>
+   1 | 0 | 1 | 1 | 1 |<br>
+     +---+---+---+---+<br>
+<br>
