@@ -18,14 +18,32 @@ except Exception:
 
 
 
-# convert integer to list of bits (binary)
 def bits_of(i: int, width: int) -> List[int]:
+    '''
+    convert integer to list of bits (binary).
+
+    :param i: int to get bits of.
+    :type i: int
+    :param width: width of the bits to get the values of.
+    :type width: int
+    :return: bits of i.
+    :rtype: List[int]
+    '''
     return [(i >> (width - 1 - b)) & 1 for b in range(width)]
 
 
 
-# Convert SymPy expression into readable word-based form
 def sympy_obj_to_words(expr: Any, variables: List[str]) -> str:
+    '''
+    Convert SymPy expression into readable word-based form
+
+    :param expr: Expressions to change
+    :type expr: Any
+    :param variables: List of variables
+    :type variables: List[str]
+    :return: Changed expression
+    :rtype: str
+    '''
     if expr is True:
         return "1"
     if expr is False:
@@ -43,8 +61,17 @@ def sympy_obj_to_words(expr: Any, variables: List[str]) -> str:
 
 
 
-# Detect XOR and XNOR patterns after simplification
 def detect_xor_xnor(expr_str: str, variables: List[str]) -> str:
+    '''
+    Detect XOR and XNOR patterns after simplification
+
+    :param expr_str: Expression to change
+    :type expr_str: str
+    :param variables: List of Variables
+    :type variables: List[str]
+    :return: Changed expression
+    :rtype: str
+    '''
     s = expr_str.replace(" ", "")
 
 
@@ -97,7 +124,7 @@ class TruthTableExtended:
     def detect_variables(expr: str) -> List[str]:
         found = []
         for c in expr.replace("(","").replace(")","").split():
-            if c not in ["and", "or", "not", "^", "=="]:  # Supports up to 5 variables, can be removed later if need be
+            if c not in ["and", "or", "not", "^", "=="]:
                 if c not in found:
                     found.append(c)
         found.sort()
@@ -263,4 +290,5 @@ def cli_main(argv:List[str]) -> None:
 
 if __name__ == "__main__":
     import sys
+    cli_main(["", "expr", "(A and B) or (A and C)"])
     cli_main(sys.argv)
