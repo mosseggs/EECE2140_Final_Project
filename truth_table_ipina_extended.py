@@ -139,6 +139,8 @@ class TruthTableExtended:
         norm = norm.replace(" AND ", " and ")
         norm = norm.replace(" OR ", " or ")
         norm = norm.replace(" NOT ", " not ")
+        norm = norm.replace("xor", "^")
+        norm = norm.replace("xnor", "==")
         norm = norm.replace("XOR", "^")
         norm = norm.replace("XNOR", "==")
         norm = norm.replace("&", " and ")
