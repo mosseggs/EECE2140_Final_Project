@@ -290,5 +290,4 @@ def cli_main(argv:List[str]) -> None:
 
 if __name__ == "__main__":
     import sys
-    cli_main(["", "expr", "(A and B) or (A and C)"])
     cli_main(sys.argv)
